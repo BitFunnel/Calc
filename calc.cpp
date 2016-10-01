@@ -6,10 +6,10 @@
 #include <sstream>
 
 
-class Parser
+class Calc
 {
 public:
-    Parser(std::string const & src);
+    Calc(std::string const & src);
 
     double Evaluate();
 
@@ -102,7 +102,7 @@ private:
 };
 
 
-Parser::Parser(std::string const & src)
+Calc::Calc(std::string const & src)
     : m_src(src),
       m_currentPosition(0)
 {
@@ -117,13 +117,13 @@ Parser::Parser(std::string const & src)
 }
 
 
-double Parser::Evaluate()
+double Calc::Evaluate()
 {
     return ParseExpression();
 }
 
 
-double Parser::ParseExpression()
+double Calc::ParseExpression()
 {
     double expression = ParseSum();
 
@@ -137,7 +137,7 @@ double Parser::ParseExpression()
 }
 
 
-double Parser::ParseSum()
+double Calc::ParseSum()
 {
     double left = ParseProduct();
 
@@ -163,7 +163,7 @@ double Parser::ParseSum()
 }
 
 
-double Parser::ParseProduct()
+double Calc::ParseProduct()
 {
     double left = ParseTerm();
 
@@ -189,7 +189,7 @@ double Parser::ParseProduct()
 }
 
 
-double Parser::ParseTerm()
+double Calc::ParseTerm()
 {
     SkipWhite();
 
@@ -221,7 +221,7 @@ double Parser::ParseTerm()
 }
 
 
-double Parser::ParseIdentifier()
+double Calc::ParseIdentifier()
 {
     std::string symbol = GetSymbol();
 
@@ -260,7 +260,7 @@ double Parser::ParseIdentifier()
 }
 
 
-double Parser::GetFloat()
+double Calc::GetFloat()
 {
     // s will hold a string of floating point number characters that will
     // eventually be passed to stof().
@@ -331,7 +331,7 @@ double Parser::GetFloat()
 }
 
 
-std::string Parser::GetSymbol()
+std::string Calc::GetSymbol()
 {
     std::string symbol;
 
@@ -349,13 +349,13 @@ std::string Parser::GetSymbol()
 }
 
 
-bool Parser::IsFirstCharOfFloat(char c)
+bool Calc::IsFirstCharOfFloat(char c)
 {
     return isdigit(c) || (c == '-') || (c == '+') || (c == '.');
 }
 
 
-void Parser::SkipWhite()
+void Calc::SkipWhite()
 {
     while (isspace(PeekChar()))
     {
@@ -364,7 +364,7 @@ void Parser::SkipWhite()
 }
 
 
-void Parser::Consume(char c)
+void Calc::Consume(char c)
 {
     if (PeekChar() != c)
     {
@@ -380,7 +380,7 @@ void Parser::Consume(char c)
 }
 
 
-char Parser::GetChar()
+char Calc::GetChar()
 {
     char result = PeekChar();
     if (result != '\0')
@@ -391,7 +391,7 @@ char Parser::GetChar()
 }
 
 
-char Parser::PeekChar()
+char Calc::PeekChar()
 {
     if (m_currentPosition >= m_src.length())
     {
@@ -406,20 +406,20 @@ char Parser::PeekChar()
 
 //*****************************************************************************
 //
-// Parser::ParseError
+// Calc::ParseError
 //
 //*****************************************************************************
-Parser::ParseError::ParseError(char const * message, size_t position)
-    : std::runtime_error(message),
+Calc::ParseError::ParseError(char const * message, size_t position)
+  : std::runtime_error(message),
     m_position(position)
 {
 }
 
 
-std::ostream& operator<< (std::ostream &out, const Parser::ParseError &e)
+std::ostream& operator<< (std::ostream &out, const Calc::ParseError &e)
 {
     out << std::string(e.m_position, ' ') << '^' << std::endl;
-    out << "Parser error (position = " << e.m_position << "): ";
+    out << "Calc error (position = " << e.m_position << "): ";
     out << e.what();
     out << std::endl;
     return out;
@@ -458,7 +458,7 @@ bool Test()
             output << "\"" << m_input << "\" ==> ";
 
             try {
-                Parser parser(m_input);
+                Calc parser(m_input);
                 double result = parser.Evaluate();
 
                 output << result;
@@ -580,11 +580,11 @@ int main()
 
         try
         {
-            Parser parser(line);
+            Calc parser(line);
             double result = parser.Evaluate();
             std::cout << result << std::endl;
         }
-        catch (Parser::ParseError& e)
+        catch (Calc::ParseError& e)
         {
             std::cout << std::string(prompt.length(), ' ');
             std::cout << e;
