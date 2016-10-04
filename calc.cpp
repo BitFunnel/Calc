@@ -44,12 +44,13 @@ private:
     // Parses expressions of the form
     // PRODUCT:
     //   TERM ('*' TERM)*
+    //   TERM ('/' TERM)*
     double ParseProduct();
 
     // Parses expressions of the form
     // TERM:
     //   (SUM)
-    //   double
+    //   CONSTANT
     //   IDENTIFIER
     double ParseTerm();
 
@@ -60,9 +61,13 @@ private:
     double ParseIdentifier();
 
     // Parses expressions of the form
-    // double:
-    //   [ '+' | '-' ] (DIGIT)* [ '.' DIGIT*] [ ('e' | 'E') [ '+' | '-' ] DIGIT* ]
-    double GetFloat();
+    // CONSTANT:
+    //
+    // DESIGN NOTE: Although the first two DIGIT productions have *, in fact,
+    // one of the two must have at least one digit.
+    //
+    //   [ '+' | '-' ] (DIGIT)* [ '.' DIGIT*] [ ('e' | 'E') [ '+' | '-' ] DIGIT+ ]
+    double GetConstant();
 
     // Parses expressions of the form
     // SYMBOL: ALPHA (ALPHA | DIGIT)*
@@ -70,7 +75,7 @@ private:
 
     // Returns true if current position is the first character of a floating
     // point number.
-    bool IsFirstCharOfFloat(char c);
+    bool IsFirstCharOfDouble(char c);
 
     // Advances the current position past whitespace (space, tab, carriage
     // return, newline).
@@ -205,9 +210,9 @@ double Calc::ParseTerm()
 
         return result;
     }
-    else if (IsFirstCharOfFloat(next))
+    else if (IsFirstCharOfDouble(next))
     {
-        return GetFloat();
+        return GetConstant();
     }
     else if (isalpha(next))
     {
@@ -260,7 +265,7 @@ double Calc::ParseIdentifier()
 }
 
 
-double Calc::GetFloat()
+double Calc::GetConstant()
 {
     // s will hold a string of floating point number characters that will
     // eventually be passed to stof().
@@ -323,7 +328,7 @@ double Calc::GetFloat()
     {
         return stod(s);
     }
-    catch (...)
+    catch (std::invalid_argument)
     {
         throw ParseError("Invalid float.",
                          m_currentPosition);
@@ -349,7 +354,7 @@ std::string Calc::GetSymbol()
 }
 
 
-bool Calc::IsFirstCharOfFloat(char c)
+bool Calc::IsFirstCharOfDouble(char c)
 {
     return isdigit(c) || (c == '-') || (c == '+') || (c == '.');
 }
@@ -441,9 +446,6 @@ bool Test()
     class TestCase
     {
     public:
-        // TODO: REVIEW: Passing double here instead of double so that I don't
-        // have to type the 'f' character at the end of every floating point
-        // constant. Consider just changing entire example to use doubles.
         TestCase(char const * input, double output)
             : m_input(input),
               m_output(static_cast<double>(output))
